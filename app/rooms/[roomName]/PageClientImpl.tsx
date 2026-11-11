@@ -19,6 +19,7 @@ import {
   RoomOptions,
   VideoCodec,
   VideoPresets,
+  AudioPresets,
   Room,
   DeviceUnsupportedError,
   RoomConnectOptions,
@@ -157,9 +158,19 @@ function VideoConferenceComponent(props: {
         {
           resolution: { width: 2560, height: 1440, frameRate: 30 },
           contentHint: 'detail',
+          // Ask for audio too: this is what makes Chrome show the
+          // "Share tab audio" / "Share system audio" switch in its picker.
+          audio: true,
+          systemAudio: 'include',
+          // Keep hearing the shared tab yourself, and let people switch tabs mid-share.
+          suppressLocalAudioPlayback: false,
+          surfaceSwitching: 'include',
+          // Hide this call's own tab from the picker (avoids the infinite mirror).
+          selfBrowserSurface: 'exclude',
           ...captureOptions,
         },
-        publishOptions,
+        // Shared audio is usually music/video: send it in music quality, not voice.
+        { audioPreset: AudioPresets.musicHighQualityStereo, dtx: false, ...publishOptions },
       );
     return r;
   }, []);

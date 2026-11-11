@@ -159,6 +159,7 @@
 .tile::after {
   content: '';
   position: absolute;
+  z-index: 1;
   inset: 0;
   border-radius: inherit;
   box-shadow: inset 0 0 0 3px var(--accent);
@@ -172,6 +173,7 @@
 .video {
   position: absolute;
   inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -211,6 +213,7 @@
 }
 .nameChip {
   position: absolute;
+  z-index: 2;
   left: 12px;
   bottom: 12px;
   max-width: calc(100% - 24px);
@@ -238,6 +241,7 @@
 }
 .pinButton {
   position: absolute;
+  z-index: 2;
   top: 10px;
   right: 10px;
   width: 36px;
@@ -261,6 +265,47 @@
 .pinButton[aria-pressed='true'] {
   background: var(--accent);
   color: var(--ink);
+}
+.localMuteButton {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  right: 54px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(28, 21, 18, 0.85);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.tile:hover .localMuteButton,
+.localMuteButton:focus-visible,
+.localMuteButton[aria-pressed='true'] {
+  opacity: 1;
+}
+.localMuteButton[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--ink);
+}
+.tile[data-variant='strip'] .localMuteButton,
+.tile[data-variant='strip'] .pinButton {
+  width: 32px;
+  height: 32px;
+}
+.tile[data-variant='strip'] .localMuteButton {
+  right: 48px;
+}
+@media (hover: none) {
+  .localMuteButton,
+  .pinButton {
+    opacity: 1;
+  }
 }
 .overflowTile {
   border: 0;
@@ -534,6 +579,32 @@
 }
 .personName span {
   color: var(--cream-muted);
+}
+.personNote {
+  display: block;
+  font-size: 12px;
+  color: #b33a14;
+}
+.personAction {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cream-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.personAction:hover {
+  background: rgba(28, 21, 18, 0.08);
+  color: var(--ink);
+}
+.personAction[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--ink);
 }
 .personMic {
   display: flex;

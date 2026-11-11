@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import { formatChatMessageLinks, useParticipants, type ReceivedChatMessage } from '@livekit/components-react';
-import { CloseIcon, CopyIcon, MicIcon, SendIcon } from './icons';
+import { CloseIcon, CopyIcon, MicIcon, SendIcon, SpeakerIcon } from './icons';
+import { useLocalMute } from './localMute';
 import { Avatar, participantName, useMicEnabled } from './Tile';
 import type { Participant } from 'livekit-client';
 import styles from '../../styles/Call.module.css';
@@ -106,13 +107,29 @@ export function ChatPanel({
 
 function PersonRow({ participant }: { participant: Participant }) {
   const mic = useMicEnabled(participant);
+  const localMute = useLocalMute();
+  const mutedForMe = !participant.isLocal && localMute.isMuted(participant.identity);
+  const name = participantName(participant);
   return (
     <li className={styles.person}>
       <Avatar participant={participant} size="sm" />
       <span className={styles.personName}>
         {participantName(participant)}
         {participant.isLocal && <span> (você)</span>}
+        {mutedForMe && <small className={styles.personNote}>Silenciado só para você</small>}
       </span>
+      {!participant.isLocal && (
+        <button
+          type="button"
+          className={styles.personAction}
+          aria-pressed={mutedForMe}
+          aria-label={mutedForMe ? `Voltar a ouvir ${name}` : `Silenciar ${name} só para mim`}
+          title={mutedForMe ? 'Voltar a ouvir' : 'Silenciar só para mim (ninguém fica sabendo)'}
+          onClick={() => localMute.toggle(participant.identity)}
+        >
+          <SpeakerIcon size={18} off={mutedForMe} />
+        </button>
+      )}
       <span className={styles.personMic} data-off={!mic || undefined} title={mic ? 'Microfone ligado' : 'Microfone desligado'}>
         <MicIcon size={18} off={!mic} />
       </span>

@@ -10,7 +10,8 @@ import {
 } from '@livekit/components-react';
 import { Participant, ParticipantEvent, Track } from 'livekit-client';
 import { displayFont } from '../fonts';
-import { MicIcon, PinIcon } from './icons';
+import { MicIcon, PinIcon, SpeakerIcon } from './icons';
+import { useLocalMute } from './localMute';
 import styles from '../../styles/Call.module.css';
 
 const AVATAR_COLORS = ['#FFC2A8', '#FF9871', '#FFE2D4', '#FF5B2E'];
@@ -79,6 +80,9 @@ export function Tile({
   const videoMuted = useIsMuted(trackRef);
   const micEnabled = useMicEnabled(p);
   const hasVideo = isTrackReference(trackRef) && !videoMuted;
+  const localMute = useLocalMute();
+  const canLocalMute = !p.isLocal && !isScreen;
+  const mutedForMe = canLocalMute && localMute.isMuted(p.identity);
   const name = participantName(p) + (p.isLocal ? ' (você)' : '');
   const label = isScreen ? `Tela de ${participantName(p)}${p.isLocal ? ' (você)' : ''}` : name;
 
@@ -86,7 +90,7 @@ export function Tile({
     <div
       className={styles.tile}
       data-variant={variant}
-      data-speaking={(!isScreen && speaking) || undefined}
+      data-speaking={(!isScreen && speaking && !mutedForMe) || undefined}
       data-screen={isScreen || undefined}
     >
       {hasVideo ? (
@@ -105,8 +109,26 @@ export function Tile({
             <MicIcon size={14} off />
           </span>
         )}
+        {mutedForMe && (
+          <span className={styles.mutedIcon} title="Silenciado só para você">
+            <SpeakerIcon size={14} off />
+          </span>
+        )}
         <span className={styles.nameText}>{label}</span>
       </span>
+
+      {canLocalMute && variant !== 'pip' && (
+        <button
+          type="button"
+          className={styles.localMuteButton}
+          aria-pressed={mutedForMe}
+          aria-label={mutedForMe ? `Voltar a ouvir ${name}` : `Silenciar ${name} só para mim`}
+          title={mutedForMe ? 'Voltar a ouvir' : 'Silenciar só para mim (ninguém fica sabendo)'}
+          onClick={() => localMute.toggle(p.identity)}
+        >
+          <SpeakerIcon off={mutedForMe} />
+        </button>
+      )}
 
       {onTogglePin && variant !== 'pip' && (
         <button

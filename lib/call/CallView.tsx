@@ -21,6 +21,7 @@ import { useNoiseFilter } from '../NoiseFilterButton';
 import { usePictureInPicture } from '../PictureInPicture';
 import { SettingsPanel, SettingsTab } from './SettingsPanel';
 import { useBackgroundEffect } from './useBackgroundEffect';
+import { LocalMuteProvider } from './localMute';
 import { computeLayout, DEFAULT_LAYOUT_PREFS, gridColumns, LayoutItem, LayoutPrefs } from './layout';
 import { LayoutDialog } from './LayoutDialog';
 import { ChatPanel, InviteCard, PeoplePanel } from './Panels';
@@ -114,7 +115,9 @@ const trackId = (t: TrackReferenceOrPlaceholder) => `${t.participant.identity}:$
 export function CallView(props: { roomName: string }) {
   return (
     <LayoutContextProvider>
-      <CallInner {...props} />
+      <LocalMuteProvider>
+        <CallInner {...props} />
+      </LocalMuteProvider>
     </LayoutContextProvider>
   );
 }

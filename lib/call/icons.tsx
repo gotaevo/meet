@@ -119,3 +119,9 @@ export const SparkIcon = ({ size = 18 }: P) => (
     <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" />
   </svg>
 );
+export const SpeakerIcon = ({ size = 16, off }: P & { off?: boolean }) => (
+  <svg {...base(size)}>
+    <path d="M4 9h4l5-4v14l-5-4H4z" />
+    {off ? <path d="M17 9l5 6M22 9l-5 6" /> : <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />}
+  </svg>
+);
