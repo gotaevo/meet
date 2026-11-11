@@ -134,6 +134,9 @@ function VideoConferenceComponent(props: {
         : [VideoPresets.h540, VideoPresets.h216],
       red: !e2eeEnabled,
       videoCodec,
+      // Screen share: high bitrate and no simulcast, so text/UI stays sharp
+      screenShareEncoding: { maxBitrate: 8_000_000, maxFramerate: 30 },
+      screenShareSimulcastLayers: [],
     };
     return {
       videoCaptureDefaults: videoCaptureDefaults,
@@ -148,7 +151,23 @@ function VideoConferenceComponent(props: {
     };
   }, [props.userChoices, props.options.hq, props.options.codec]);
 
-  const room = React.useMemo(() => new Room(roomOptions), []);
+  const room = React.useMemo(() => {
+    const r = new Room(roomOptions);
+    // Default capture options for screen share: 1080p30 and 'detail' hint
+    // (keeps resolution/sharpness over framerate when bandwidth drops).
+    const original = r.localParticipant.setScreenShareEnabled.bind(r.localParticipant);
+    r.localParticipant.setScreenShareEnabled = (enabled, captureOptions, publishOptions) =>
+      original(
+        enabled,
+        {
+          resolution: { width: 1920, height: 1080, frameRate: 30 },
+          contentHint: 'detail',
+          ...captureOptions,
+        },
+        publishOptions,
+      );
+    return r;
+  }, []);
 
   React.useEffect(() => {
     if (e2eeEnabled) {
