@@ -7,6 +7,7 @@ import {
   VideoQuality,
   LocalVideoTrack,
   isVideoTrack,
+  Track,
 } from 'livekit-client';
 import * as React from 'react';
 
@@ -33,7 +34,8 @@ export function useLowCPUOptimizer(room: Room, options: Partial<LowCPUOptimizerO
     const handleCpuConstrained = async (track: LocalVideoTrack) => {
       setLowPowerMode(true);
       console.warn('Local track CPU constrained', track);
-      if (opts.reducePublisherVideoQuality) {
+      // Never degrade screen share: it must stay sharp to be readable.
+      if (opts.reducePublisherVideoQuality && track.source !== Track.Source.ScreenShare) {
         track.prioritizePerformance();
       }
       if (opts.disableVideoProcessing && isVideoTrack(track)) {
@@ -42,6 +44,7 @@ export function useLowCPUOptimizer(room: Room, options: Partial<LowCPUOptimizerO
       if (opts.reduceSubscriberVideoQuality) {
         room.remoteParticipants.forEach((participant) => {
           participant.videoTrackPublications.forEach((publication) => {
+            if (publication.source === Track.Source.ScreenShare) return;
             publication.setVideoQuality(VideoQuality.LOW);
           });
         });
@@ -56,6 +59,7 @@ export function useLowCPUOptimizer(room: Room, options: Partial<LowCPUOptimizerO
 
   React.useEffect(() => {
     const lowerQuality = (_: RemoteTrack, publication: RemoteTrackPublication) => {
+      if (publication.source === Track.Source.ScreenShare) return;
       publication.setVideoQuality(VideoQuality.LOW);
     };
     if (lowPowerMode && opts.reduceSubscriberVideoQuality) {

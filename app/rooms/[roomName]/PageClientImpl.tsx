@@ -5,6 +5,7 @@ import { decodePassphrase } from '@/lib/client-utils';
 import { DebugMode } from '@/lib/Debug';
 import { KeyboardShortcuts } from '@/lib/KeyboardShortcuts';
 import { RecordingIndicator } from '@/lib/RecordingIndicator';
+import { PictureInPicture } from '@/lib/PictureInPicture';
 import { SettingsMenu } from '@/lib/SettingsMenu';
 import { ConnectionDetails } from '@/lib/types';
 import {
@@ -135,7 +136,7 @@ function VideoConferenceComponent(props: {
       red: !e2eeEnabled,
       videoCodec,
       // Screen share: high bitrate and no simulcast, so text/UI stays sharp
-      screenShareEncoding: { maxBitrate: 8_000_000, maxFramerate: 30 },
+      screenShareEncoding: { maxBitrate: 12_000_000, maxFramerate: 30 },
       screenShareSimulcastLayers: [],
     };
     return {
@@ -153,14 +154,14 @@ function VideoConferenceComponent(props: {
 
   const room = React.useMemo(() => {
     const r = new Room(roomOptions);
-    // Default capture options for screen share: 1080p30 and 'detail' hint
+    // Default capture options for screen share: up to 1440p30 and 'detail' hint
     // (keeps resolution/sharpness over framerate when bandwidth drops).
     const original = r.localParticipant.setScreenShareEnabled.bind(r.localParticipant);
     r.localParticipant.setScreenShareEnabled = (enabled, captureOptions, publishOptions) =>
       original(
         enabled,
         {
-          resolution: { width: 1920, height: 1080, frameRate: 30 },
+          resolution: { width: 2560, height: 1440, frameRate: 30 },
           contentHint: 'detail',
           ...captureOptions,
         },
@@ -261,6 +262,7 @@ function VideoConferenceComponent(props: {
         />
         <DebugMode />
         <RecordingIndicator />
+        <PictureInPicture />
       </RoomContext.Provider>
     </div>
   );
