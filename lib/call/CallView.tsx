@@ -400,13 +400,22 @@ function MediaControl({ source }: { source: Track.Source.Microphone | Track.Sour
         {isMic ? <MicIcon off={!enabled} /> : <CamIcon off={!enabled} />}
       </button>
       {open && (
-        <div className={`lk-device-menu ${styles.devicePopover}`} role="dialog" aria-label={`Escolher ${noun}`}>
+        <div
+          className={`lk-device-menu ${styles.devicePopover}`}
+          role="dialog"
+          aria-label={`Escolher ${noun}`}
+          // Close only when a device is actually clicked. (MediaDeviceSelect's
+          // onActiveDeviceChange also fires on open when a non-default device is in use.)
+          onClick={(e) => {
+            if ((e.target as Element).closest('li')) close();
+          }}
+        >
           <div className="lk-device-menu-heading">{isMic ? 'Microfone' : 'Câmera'}</div>
-          <MediaDeviceSelect kind={isMic ? 'audioinput' : 'videoinput'} onActiveDeviceChange={close} />
+          <MediaDeviceSelect kind={isMic ? 'audioinput' : 'videoinput'} />
           {isMic && (
             <>
               <div className="lk-device-menu-heading">Alto-falante</div>
-              <MediaDeviceSelect kind="audiooutput" onActiveDeviceChange={close} />
+              <MediaDeviceSelect kind="audiooutput" />
             </>
           )}
         </div>
