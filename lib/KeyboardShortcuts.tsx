@@ -5,8 +5,8 @@ import { Track } from 'livekit-client';
 import { useTrackToggle } from '@livekit/components-react';
 
 export function KeyboardShortcuts() {
-  const { toggle: toggleMic } = useTrackToggle({ source: Track.Source.Microphone });
-  const { toggle: toggleCamera } = useTrackToggle({ source: Track.Source.Camera });
+  const { toggle: toggleMic } = useTrackToggle({ source: Track.Source.Microphone, onDeviceError: () => {} });
+  const { toggle: toggleCamera } = useTrackToggle({ source: Track.Source.Camera, onDeviceError: () => {} });
 
   React.useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {

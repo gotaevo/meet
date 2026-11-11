@@ -41,15 +41,6 @@ body {
   color: rgba(255, 255, 255, 0.6);
 }
 
-footer {
-  width: 100%;
-  padding: 1.5rem 2rem;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.6);
-  background-color: var(--lk-bg);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-}
-
 footer a,
 h2 a {
   color: #ff6352;

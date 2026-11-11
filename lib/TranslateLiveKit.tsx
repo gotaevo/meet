@@ -45,7 +45,8 @@ function translate(root: Node) {
     } else if (node instanceof Element) {
       for (const attr of ATTRS) {
         const v = node.getAttribute(attr);
-        if (v && PT_BR[v]) node.setAttribute(attr, PT_BR[v]);
+        // Only write when it changes: writing the same value would re-trigger the observer forever.
+        if (v && PT_BR[v] && PT_BR[v] !== v) node.setAttribute(attr, PT_BR[v]);
       }
     }
     node = walker.nextNode();

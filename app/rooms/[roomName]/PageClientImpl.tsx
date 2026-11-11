@@ -1,22 +1,18 @@
 'use client';
 
-import { NoiseFilterButton } from '@/lib/NoiseFilterButton';
 
 import React from 'react';
 import { decodePassphrase } from '@/lib/client-utils';
 import { DebugMode } from '@/lib/Debug';
 import { KeyboardShortcuts } from '@/lib/KeyboardShortcuts';
 import { RecordingIndicator } from '@/lib/RecordingIndicator';
-import { PictureInPicture } from '@/lib/PictureInPicture';
+import { CallView } from '@/lib/call/CallView';
 import { TranslateLiveKit } from '@/lib/TranslateLiveKit';
 import { JoinScreen } from '@/lib/JoinScreen';
-import { SettingsMenu } from '@/lib/SettingsMenu';
 import { ConnectionDetails } from '@/lib/types';
 import {
-  formatChatMessageLinks,
   LocalUserChoices,
   RoomContext,
-  VideoConference,
 } from '@livekit/components-react';
 import {
   ExternalE2EEKeyProvider,
@@ -31,6 +27,7 @@ import {
   VideoCaptureOptions,
 } from 'livekit-client';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { useSetupE2EE } from '@/lib/useSetupE2EE';
 import { useLowCPUOptimizer } from '@/lib/usePerfomanceOptimiser';
 
@@ -73,7 +70,8 @@ export function PageClientImpl(props: {
     const connectionDetailsData = await connectionDetailsResp.json();
     setConnectionDetails(connectionDetailsData);
   }, []);
-  const handlePreJoinError = React.useCallback((e: any) => console.error(e), []);
+  // The join screen already tells the user when camera/mic are blocked.
+  const handlePreJoinError = React.useCallback((e: any) => console.warn(e), []);
 
   return (
     <main data-lk-theme="default" style={{ height: '100%' }}>
@@ -86,6 +84,7 @@ export function PageClientImpl(props: {
         />
       ) : (
         <VideoConferenceComponent
+          roomName={props.roomName}
           connectionDetails={connectionDetails}
           userChoices={preJoinChoices}
           options={{
@@ -100,6 +99,7 @@ export function PageClientImpl(props: {
 }
 
 function VideoConferenceComponent(props: {
+  roomName: string;
   userChoices: LocalUserChoices;
   connectionDetails: ConnectionDetails;
   options: {
@@ -196,7 +196,7 @@ function VideoConferenceComponent(props: {
   React.useEffect(() => {
     room.on(RoomEvent.Disconnected, handleOnLeave);
     room.on(RoomEvent.EncryptionError, handleEncryptionError);
-    room.on(RoomEvent.MediaDevicesError, handleError);
+    room.on(RoomEvent.MediaDevicesError, handleDeviceError);
 
     if (e2eeSetupComplete) {
       room
@@ -209,20 +209,20 @@ function VideoConferenceComponent(props: {
           handleError(error);
         });
       if (props.userChoices.videoEnabled) {
-        room.localParticipant.setCameraEnabled(true).catch((error) => {
-          handleError(error);
+        room.localParticipant.setCameraEnabled(true).catch(() => {
+          // Reported through RoomEvent.MediaDevicesError (handleDeviceError).
         });
       }
       if (props.userChoices.audioEnabled) {
-        room.localParticipant.setMicrophoneEnabled(true).catch((error) => {
-          handleError(error);
+        room.localParticipant.setMicrophoneEnabled(true).catch(() => {
+          // Reported through RoomEvent.MediaDevicesError (handleDeviceError).
         });
       }
     }
     return () => {
       room.off(RoomEvent.Disconnected, handleOnLeave);
       room.off(RoomEvent.EncryptionError, handleEncryptionError);
-      room.off(RoomEvent.MediaDevicesError, handleError);
+      room.off(RoomEvent.MediaDevicesError, handleDeviceError);
     };
   }, [e2eeSetupComplete, room, props.connectionDetails, props.userChoices]);
 
@@ -233,6 +233,25 @@ function VideoConferenceComponent(props: {
   const handleError = React.useCallback((error: Error) => {
     console.error(error);
     alert(`Ocorreu um erro inesperado. Veja o console para mais detalhes: ${error.message}`);
+  }, []);
+  /**
+   * Camera / microphone / screen errors. Cancelling the screen-share picker is a normal
+   * user action (NotAllowedError with no device kind): ignore it. Blocked devices get a
+   * clear message instead of the generic "unexpected error" alert.
+   */
+  const handleDeviceError = React.useCallback((error: Error, kind?: MediaDeviceKind) => {
+    const denied = error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError';
+    if (denied && !kind) return;
+    console.warn(error);
+    const device = kind === 'audioinput' ? 'o microfone' : kind === 'videoinput' ? 'a câmera' : 'o dispositivo';
+    const message = denied
+      ? `O navegador bloqueou ${device}. Libere o acesso nas permissões do site (ícone ao lado do endereço).`
+      : error.name === 'NotReadableError'
+        ? `Não foi possível usar ${device}: pode estar em uso por outro aplicativo.`
+        : error.name === 'NotFoundError'
+          ? `Não encontramos ${device} neste computador.`
+          : `Problema com ${device}: ${error.message}`;
+    toast.error(message, { id: `device-${kind}-${error.name}`, duration: 8000 });
   }, []);
   const handleEncryptionError = React.useCallback((error: Error) => {
     console.error(error);
@@ -251,14 +270,9 @@ function VideoConferenceComponent(props: {
     <div className="lk-room-container">
       <RoomContext.Provider value={room}>
         <KeyboardShortcuts />
-        <VideoConference
-          chatMessageFormatter={formatChatMessageLinks}
-          SettingsComponent={SHOW_SETTINGS_MENU ? SettingsMenu : undefined}
-        />
-        <NoiseFilterButton />
+        <CallView roomName={props.roomName} showSettings={SHOW_SETTINGS_MENU} />
         <DebugMode />
         <RecordingIndicator />
-        <PictureInPicture />
       </RoomContext.Provider>
     </div>
   );

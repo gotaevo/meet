@@ -29,7 +29,7 @@ function writePref(value: boolean) {
  * "On" runs the mic through RNNoise on top of the browser's own noise suppression;
  * "off" removes the processor entirely. The button reflects the processor's real state.
  */
-function useNoiseFilter() {
+export function useNoiseFilter() {
   const { microphoneTrack, isMicrophoneEnabled } = useLocalParticipant();
   const track =
     microphoneTrack?.track instanceof LocalAudioTrack ? microphoneTrack.track : undefined;

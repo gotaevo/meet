@@ -55,11 +55,17 @@ function copyStyles(target: Window) {
   }
 }
 
-export function PictureInPicture() {
+/**
+ * Picture-in-picture state for the call screen: auto-opens when leaving the tab,
+ * closes when coming back or leaving the call. Render `portal` somewhere in the
+ * room tree and call `open()` from your own button.
+ */
+export function usePictureInPicture() {
   const room = useRoomContext();
   const [pipWindow, setPipWindow] = React.useState<Window | null>(null);
   const autoOpenedRef = React.useRef(false);
-  const supported = !!getDocumentPiP();
+  const [supported, setSupported] = React.useState(false);
+  React.useEffect(() => setSupported(!!getDocumentPiP()), []);
 
   const openPip = React.useCallback(async (auto: boolean) => {
     const dpip = getDocumentPiP();
@@ -70,7 +76,7 @@ export function PictureInPicture() {
       win.document.title = document.title;
       win.document.body.setAttribute('data-lk-theme', 'default');
       win.document.body.style.margin = '0';
-      win.document.body.style.background = 'var(--lk-bg, #111)';
+      win.document.body.style.background = '#141110';
       win.addEventListener('pagehide', () => {
         autoOpenedRef.current = false;
         setPipWindow(null);
@@ -123,28 +129,42 @@ export function PictureInPicture() {
     };
   }, [room, closePip]);
 
-  if (!supported) return null;
+  const portal = pipWindow
+    ? createPortal(
+        <RoomContext.Provider value={room}>
+          <PipContent />
+        </RoomContext.Provider>,
+        pipWindow.document.body,
+      )
+    : null;
 
+  return {
+    supported,
+    isOpen: !!pipWindow,
+    open: React.useCallback(() => openPip(false), [openPip]),
+    close: closePip,
+    portal,
+  };
+}
+
+/** Standalone version with its own floating button (used by the custom-connection page). */
+export function PictureInPicture() {
+  const pip = usePictureInPicture();
+  if (!pip.supported) return null;
   return (
     <>
-      {!pipWindow && (
+      {!pip.isOpen && (
         <button
           className="lk-button"
           title="Janela flutuante"
           aria-label="Janela flutuante"
-          onClick={() => openPip(false)}
+          onClick={pip.open}
           style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', zIndex: 10 }}
         >
           <PipIcon />
         </button>
       )}
-      {pipWindow &&
-        createPortal(
-          <RoomContext.Provider value={room}>
-            <PipContent />
-          </RoomContext.Provider>,
-          pipWindow.document.body,
-        )}
+      {pip.portal}
     </>
   );
 }
@@ -231,7 +251,7 @@ function gridColumns(count: number) {
   return Math.ceil(Math.sqrt(count));
 }
 
-function PipIcon() {
+export function PipIcon() {
   return (
     <svg
       width="16"
