@@ -33,7 +33,6 @@ import { useLowCPUOptimizer } from '@/lib/usePerfomanceOptimiser';
 
 const CONN_DETAILS_ENDPOINT =
   process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? '/api/connection-details';
-const SHOW_SETTINGS_MENU = process.env.NEXT_PUBLIC_SHOW_SETTINGS_MENU == 'true';
 
 export function PageClientImpl(props: {
   roomName: string;
@@ -270,7 +269,7 @@ function VideoConferenceComponent(props: {
     <div className="lk-room-container">
       <RoomContext.Provider value={room}>
         <KeyboardShortcuts />
-        <CallView roomName={props.roomName} showSettings={SHOW_SETTINGS_MENU} />
+        <CallView roomName={props.roomName} />
         <DebugMode />
         <RecordingIndicator />
       </RoomContext.Provider>

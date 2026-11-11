@@ -10,7 +10,6 @@ import {
   TrackReferenceOrPlaceholder,
   isTrackReference,
   useChat,
-  useLayoutContext,
   useParticipants,
   useRoomContext,
   useSpeakingParticipants,
@@ -20,7 +19,8 @@ import {
 import { Track } from 'livekit-client';
 import { useNoiseFilter } from '../NoiseFilterButton';
 import { usePictureInPicture } from '../PictureInPicture';
-import { SettingsMenu } from '../SettingsMenu';
+import { SettingsPanel, SettingsTab } from './SettingsPanel';
+import { useBackgroundEffect } from './useBackgroundEffect';
 import { computeLayout, DEFAULT_LAYOUT_PREFS, gridColumns, LayoutItem, LayoutPrefs } from './layout';
 import { LayoutDialog } from './LayoutDialog';
 import { ChatPanel, InviteCard, PeoplePanel } from './Panels';
@@ -31,6 +31,7 @@ import {
   ChevronUpIcon,
   ExpandIcon,
   GearIcon,
+  SparkIcon,
   HangUpIcon,
   InfoIcon,
   LayoutIcon,
@@ -110,7 +111,7 @@ const ignoreDeviceError = () => {};
 
 const trackId = (t: TrackReferenceOrPlaceholder) => `${t.participant.identity}:${t.source}`;
 
-export function CallView(props: { roomName: string; showSettings: boolean }) {
+export function CallView(props: { roomName: string }) {
   return (
     <LayoutContextProvider>
       <CallInner {...props} />
@@ -118,12 +119,17 @@ export function CallView(props: { roomName: string; showSettings: boolean }) {
   );
 }
 
-function CallInner({ roomName, showSettings }: { roomName: string; showSettings: boolean }) {
+function CallInner({ roomName }: { roomName: string }) {
   const room = useRoomContext();
-  const layoutCtx = useLayoutContext();
   const [prefs, setPrefs] = useLayoutPrefs();
   const [pinned, setPinned] = React.useState<string>();
-  const [panel, setPanel] = React.useState<'chat' | 'people' | null>(null);
+  const [panel, setPanel] = React.useState<'chat' | 'people' | 'settings' | null>(null);
+  const [settingsTab, setSettingsTab] = React.useState<SettingsTab>('audio');
+  const background = useBackgroundEffect();
+  const openSettings = (tab: SettingsTab) => {
+    setSettingsTab(tab);
+    setPanel('settings');
+  };
   const [layoutOpen, setLayoutOpen] = React.useState(false);
   const [inviteDismissed, setInviteDismissed] = React.useState(false);
   const [inviteForced, setInviteForced] = React.useState(false);
@@ -187,8 +193,6 @@ function CallInner({ roomName, showSettings }: { roomName: string; showSettings:
       setTimeout(() => setCopied(false), 2000);
     } catch {}
   };
-
-  const settingsOpen = !!layoutCtx.widget.state?.showSettings;
 
   return (
     <div className={styles.call} data-lk-theme="default">
@@ -284,6 +288,14 @@ function CallInner({ roomName, showSettings }: { roomName: string; showSettings:
         {panel === 'people' && (
           <PeoplePanel onClose={() => setPanel(null)} onCopyLink={copyLink} copied={copied} />
         )}
+        {panel === 'settings' && (
+          <SettingsPanel
+            tab={settingsTab}
+            onTabChange={setSettingsTab}
+            onClose={() => setPanel(null)}
+            background={background}
+          />
+        )}
       </div>
 
       <footer className={styles.bottomBar}>
@@ -296,7 +308,8 @@ function CallInner({ roomName, showSettings }: { roomName: string; showSettings:
           <NoiseButton />
           <MoreMenu
             onLayout={() => setLayoutOpen(true)}
-            onSettings={showSettings ? () => layoutCtx.widget.dispatch?.({ msg: 'toggle_settings' }) : undefined}
+            onSettings={() => openSettings('audio')}
+            onBackground={() => openSettings('background')}
             onChat={() => setPanel('chat')}
             onPeople={() => setPanel('people')}
             onPip={pip.supported ? pip.open : undefined}
@@ -350,13 +363,6 @@ function CallInner({ roomName, showSettings }: { roomName: string; showSettings:
       </footer>
 
       {layoutOpen && <LayoutDialog prefs={prefs} onChange={setPrefs} onClose={() => setLayoutOpen(false)} />}
-      {showSettings && settingsOpen && (
-        <div className={styles.backdrop} onClick={() => layoutCtx.widget.dispatch?.({ msg: 'toggle_settings' })}>
-          <div onClick={(e) => e.stopPropagation()}>
-            <SettingsMenu className="lk-settings-menu-modal" />
-          </div>
-        </div>
-      )}
 
       <RoomAudioRenderer />
       <StartAudio label="Clique para ativar o áudio" className={styles.startAudio} />
@@ -480,12 +486,14 @@ function NoiseButton() {
 function MoreMenu({
   onLayout,
   onSettings,
+  onBackground,
   onChat,
   onPeople,
   onPip,
 }: {
   onLayout: () => void;
-  onSettings?: () => void;
+  onSettings: () => void;
+  onBackground: () => void;
   onChat: () => void;
   onPeople: () => void;
   onPip?: () => void;
@@ -534,7 +542,8 @@ function MoreMenu({
           {item(fullscreen ? 'Sair da tela cheia' : 'Tela cheia', <ExpandIcon />, () =>
             fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen(),
           )}
-          {onSettings && item('Configurações', <GearIcon />, onSettings)}
+          {item('Efeitos de fundo', <SparkIcon />, onBackground)}
+          {item('Configurações', <GearIcon />, onSettings)}
           {item('Chat', <ChatIcon size={18} />, onChat, styles.mobileOnly)}
           {item('Pessoas', <PeopleIcon size={18} />, onPeople, styles.mobileOnly)}
           {onPip && item('Janela flutuante', <PipIcon size={18} />, onPip, styles.mobileOnly)}
