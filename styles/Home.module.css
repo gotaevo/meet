@@ -1,40 +1,230 @@
-.main {
-  position: relative;
-  display: grid;
-  gap: 1rem;
-  justify-content: center;
-  place-content: center;
-  justify-items: center;
-  overflow: auto;
+.page {
+  --ink: #1c1512;
+  --ground: #141110;
+  --text: #f6eee9;
+  --muted: #b9ada6;
+  --line: #3a302b;
+  --field: #1e1917;
+  --accent: #ff5b2e;
+
+  display: flex;
   flex-grow: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--ground);
+  color: var(--text);
 }
 
-.tabContainer {
-  width: 100%;
-  max-width: 500px;
-  padding-inline: 2rem;
-}
-
-.tabSelect {
+.panel {
+  width: min(540px, 100%);
+  box-sizing: border-box;
+  padding: 48px 56px;
   display: flex;
-  justify-content: stretch;
-  gap: 0.125rem;
-  padding: 0.125rem;
-  margin: 0 auto 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 0.5rem;
-}
-
-.tabSelect > * {
-  width: 100%;
-}
-
-.tabContent {
-  display: flex;
-  justify-content: center;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 0.5rem;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+  align-self: flex-start;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+
+.lead {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.primary,
+.secondary {
+  font: inherit;
+  cursor: pointer;
+  transition:
+    filter 0.15s,
+    background 0.15s;
+}
+
+.primary {
+  height: 58px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.primary:hover {
+  filter: brightness(1.08);
+}
+
+.join {
+  display: flex;
+  gap: 10px;
+}
+
+.join input {
+  flex-grow: 1;
+  min-width: 0;
+  height: 52px;
+  box-sizing: border-box;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--text);
+  font: inherit;
+}
+
+.join input[aria-invalid] {
+  border-color: var(--accent);
+}
+
+.secondary {
+  height: 52px;
+  padding: 0 22px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--field);
+}
+
+.secondary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.error {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #ff9871;
+}
+
+.e2ee {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.e2ee input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.mosaic {
+  flex-grow: 1;
+  box-sizing: border-box;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+}
+
+.tile span {
+  font-size: clamp(3rem, 7vw, 6rem);
+}
+
+.tile em {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(28, 21, 18, 0.85);
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-style: normal;
+}
+
+.t1 {
+  background: #ffe2d4;
+  border-radius: 8px;
+}
+.t2 {
+  background: #ffc2a8;
+  border-radius: 40px;
+}
+.t3 {
+  background: #ff9871;
+  border-radius: 72px;
+}
+.t3 em {
+  left: 32px;
+  bottom: 28px;
+}
+/* Always a circle, whatever the tile's proportions. */
+.t4::before {
+  content: '';
+  position: absolute;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.t4 svg {
+  position: relative;
+}
+
+@media (max-width: 860px) {
+  .page {
+    flex-direction: column;
+  }
+  .panel {
+    width: 100%;
+    padding: 32px 24px;
+  }
+  .mosaic {
+    display: none;
+  }
 }

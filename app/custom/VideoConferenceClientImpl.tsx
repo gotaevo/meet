@@ -1,6 +1,7 @@
 'use client';
 
 import { NoiseFilterButton } from '@/lib/NoiseFilterButton';
+import { TranslateLiveKit } from '@/lib/TranslateLiveKit';
 
 import { formatChatMessageLinks, RoomContext, VideoConference } from '@livekit/components-react';
 import {
@@ -87,6 +88,7 @@ export function VideoConferenceClientImpl(props: {
     <div className="lk-room-container">
       <RoomContext.Provider value={room}>
         <KeyboardShortcuts />
+        <TranslateLiveKit />
         <VideoConference
           chatMessageFormatter={formatChatMessageLinks}
           SettingsComponent={

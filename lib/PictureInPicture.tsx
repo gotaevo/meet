@@ -130,8 +130,8 @@ export function PictureInPicture() {
       {!pipWindow && (
         <button
           className="lk-button"
-          title="Picture-in-picture"
-          aria-label="Picture-in-picture"
+          title="Janela flutuante"
+          aria-label="Janela flutuante"
           onClick={() => openPip(false)}
           style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', zIndex: 10 }}
         >

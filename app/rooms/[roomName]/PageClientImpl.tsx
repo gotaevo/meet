@@ -8,6 +8,7 @@ import { DebugMode } from '@/lib/Debug';
 import { KeyboardShortcuts } from '@/lib/KeyboardShortcuts';
 import { RecordingIndicator } from '@/lib/RecordingIndicator';
 import { PictureInPicture } from '@/lib/PictureInPicture';
+import { TranslateLiveKit } from '@/lib/TranslateLiveKit';
 import { SettingsMenu } from '@/lib/SettingsMenu';
 import { ConnectionDetails } from '@/lib/types';
 import {
@@ -83,12 +84,17 @@ export function PageClientImpl(props: {
 
   return (
     <main data-lk-theme="default" style={{ height: '100%' }}>
+      <TranslateLiveKit />
       {connectionDetails === undefined || preJoinChoices === undefined ? (
         <div style={{ display: 'grid', placeItems: 'center', height: '100%' }}>
           <PreJoin
             defaults={preJoinDefaults}
             onSubmit={handlePreJoinSubmit}
             onError={handlePreJoinError}
+            joinLabel="Entrar na sala"
+            micLabel="Microfone"
+            camLabel="Câmera"
+            userLabel="Seu nome"
           />
         </div>
       ) : (
@@ -180,7 +186,7 @@ function VideoConferenceComponent(props: {
           room.setE2EEEnabled(true).catch((e) => {
             if (e instanceof DeviceUnsupportedError) {
               alert(
-                `You're trying to join an encrypted meeting, but your browser does not support it. Please update it to the latest version and try again.`,
+                `Você está tentando entrar em uma reunião criptografada, mas seu navegador não oferece suporte. Atualize para a versão mais recente e tente novamente.`,
               );
               console.error(e);
             } else {
@@ -239,12 +245,12 @@ function VideoConferenceComponent(props: {
   const handleOnLeave = React.useCallback(() => router.push('/'), [router]);
   const handleError = React.useCallback((error: Error) => {
     console.error(error);
-    alert(`Encountered an unexpected error, check the console logs for details: ${error.message}`);
+    alert(`Ocorreu um erro inesperado. Veja o console para mais detalhes: ${error.message}`);
   }, []);
   const handleEncryptionError = React.useCallback((error: Error) => {
     console.error(error);
     alert(
-      `Encountered an unexpected encryption error, check the console logs for details: ${error.message}`,
+      `Ocorreu um erro inesperado de criptografia. Veja o console para mais detalhes: ${error.message}`,
     );
   }, []);
 
