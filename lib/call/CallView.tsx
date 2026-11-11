@@ -22,6 +22,7 @@ import { usePictureInPicture } from '../PictureInPicture';
 import { SettingsPanel, SettingsTab } from './SettingsPanel';
 import { useBackgroundEffect } from './useBackgroundEffect';
 import { LocalMuteProvider } from './localMute';
+import { playChime, readSoundsPref, useJoinLeaveSounds, writeSoundsPref } from './joinLeaveSounds';
 import { inviteLabel, inviteUrl } from './inviteLink';
 import { computeLayout, DEFAULT_LAYOUT_PREFS, gridColumns, LayoutItem, LayoutPrefs } from './layout';
 import { LayoutDialog } from './LayoutDialog';
@@ -130,6 +131,9 @@ function CallInner({ roomName, inviteCode }: { roomName: string; inviteCode: str
   const [panel, setPanel] = React.useState<'chat' | 'people' | 'settings' | null>(null);
   const [settingsTab, setSettingsTab] = React.useState<SettingsTab>('audio');
   const background = useBackgroundEffect();
+  const [soundsOn, setSoundsOn] = React.useState(true);
+  React.useEffect(() => setSoundsOn(readSoundsPref()), []);
+  useJoinLeaveSounds(soundsOn);
   const openSettings = (tab: SettingsTab) => {
     setSettingsTab(tab);
     setPanel('settings');
@@ -298,6 +302,14 @@ function CallInner({ roomName, inviteCode }: { roomName: string; inviteCode: str
             onTabChange={setSettingsTab}
             onClose={() => setPanel(null)}
             background={background}
+            sounds={{
+              on: soundsOn,
+              set: (on: boolean) => {
+                setSoundsOn(on);
+                writeSoundsPref(on);
+                if (on) playChime('join');
+              },
+            }}
           />
         )}
       </div>

@@ -30,8 +30,10 @@ export function SettingsPanel({
   onTabChange,
   onClose,
   background,
+  sounds,
 }: {
   tab: SettingsTab;
+  sounds: { on: boolean; set: (on: boolean) => void };
   onTabChange: (tab: SettingsTab) => void;
   onClose: () => void;
   background: {
@@ -73,7 +75,7 @@ export function SettingsPanel({
       </div>
 
       <div className={styles.settingsBody} role="tabpanel">
-        {tab === 'audio' && <AudioTab />}
+        {tab === 'audio' && <AudioTab sounds={sounds} />}
         {tab === 'video' && <VideoTab />}
         {tab === 'background' && <BackgroundTab {...background} />}
         {tab === 'recording' && <RecordingTab />}
@@ -138,7 +140,7 @@ function DeviceSelect({ kind, label }: { kind: MediaDeviceKind; label: string })
   );
 }
 
-function AudioTab() {
+function AudioTab({ sounds }: { sounds: { on: boolean; set: (on: boolean) => void } }) {
   const noise = useNoiseFilter();
   return (
     <>
@@ -156,6 +158,19 @@ function AudioTab() {
           checked={noise.active || noise.pending}
           disabled={!noise.supported || !noise.microphoneEnabled || noise.pending}
           onChange={(e) => noise.toggle(e.target.checked)}
+        />
+      </label>
+      <label className={styles.switchRowLight}>
+        <span>
+          Sons de entrada e saída
+          <small>Toca um aviso quando alguém entra ou sai da chamada.</small>
+        </span>
+        <input
+          type="checkbox"
+          role="switch"
+          className={styles.switch}
+          checked={sounds.on}
+          onChange={(e) => sounds.set(e.target.checked)}
         />
       </label>
     </>
