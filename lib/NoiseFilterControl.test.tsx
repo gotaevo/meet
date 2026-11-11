@@ -34,4 +34,17 @@ describe('NoiseFilterControl', () => {
       true,
     );
   });
+
+  it('tells the participant when the filter could not start', () => {
+    const toggle = vi.fn();
+    const failed = NoiseFilterControl({
+      enabled: false,
+      pending: false,
+      supported: true,
+      failed: true,
+      onToggle: toggle,
+    });
+    expect(failed.props['aria-label']).toContain('Não foi possível');
+    expect(failed.props['data-failed']).toBe(true);
+  });
 });

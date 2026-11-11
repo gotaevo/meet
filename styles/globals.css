@@ -75,3 +75,7 @@ h2 a {
     display: none;
   }
 }
+
+.noise-filter-button[data-failed='true'] {
+  background: var(--lk-danger3, #6b1d1d);
+}

@@ -6,18 +6,25 @@ export function NoiseFilterControl({
   supported,
   onToggle,
   microphoneEnabled = true,
+  failed = false,
 }: {
   enabled: boolean;
   pending: boolean;
   supported: boolean;
   onToggle: (value: boolean) => void;
   microphoneEnabled?: boolean;
+  /** The participant turned it on but the filter could not start. */
+  failed?: boolean;
 }) {
   const label = !supported
     ? 'Redução de ruído indisponível neste navegador'
     : !microphoneEnabled
       ? 'Ative o microfone para usar a redução de ruído'
-      : `${enabled ? 'Desativar' : 'Ativar'} redução de ruído`;
+      : pending
+        ? 'Aplicando redução de ruído...'
+        : failed
+          ? 'Não foi possível ativar a redução de ruído (clique para desligar)'
+          : `${enabled ? 'Desativar' : 'Ativar'} redução de ruído`;
   return (
     <button
       type="button"
@@ -25,6 +32,7 @@ export function NoiseFilterControl({
       aria-label={label}
       title={label}
       aria-pressed={enabled}
+      data-failed={failed || undefined}
       disabled={pending || !supported || !microphoneEnabled}
       onClick={() => onToggle(!enabled)}
     >
@@ -40,7 +48,7 @@ export function NoiseFilterControl({
       >
         <path d="M3 10v4M7 7v10M11 4v16M15 8v8M19 10v4M22 11v2" />
       </svg>
-      <span>Ruído</span>
+      <span>{pending ? 'Ruído…' : enabled ? 'Ruído: on' : 'Ruído: off'}</span>
     </button>
   );
 }
