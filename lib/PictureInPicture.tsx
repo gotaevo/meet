@@ -4,7 +4,6 @@ import * as React from 'react';
 import { createPortal } from 'react-dom';
 import {
   ControlBar,
-  GridLayout,
   LayoutContextProvider,
   ParticipantTile,
   RoomContext,
@@ -66,7 +65,7 @@ export function PictureInPicture() {
     const dpip = getDocumentPiP();
     if (!dpip || dpip.window) return;
     try {
-      const win = await dpip.requestWindow({ width: 480, height: 320 });
+      const win = await dpip.requestWindow({ width: 720, height: 480 });
       copyStyles(win);
       win.document.title = document.title;
       win.document.body.setAttribute('data-lk-theme', 'default');
@@ -159,31 +158,55 @@ function PipContent() {
     { onlySubscribed: false },
   );
 
-  // Prefer a remote screen share (showing your own screen inside PiP is useless).
-  const screenShare = tracks.find(
-    (t) =>
-      isTrackReference(t) &&
-      t.source === Track.Source.ScreenShare &&
-      !t.participant.isLocal &&
-      !t.publication.isMuted,
+  // Screen share takes the main area (prefer someone else's share over your own),
+  // with every participant's camera in a strip below, like Google Meet.
+  const shares = tracks.filter(
+    (t) => isTrackReference(t) && t.source === Track.Source.ScreenShare && !t.publication.isMuted,
   );
+  const screenShare = shares.find((t) => !t.participant.isLocal) ?? shares[0];
   const cameras = tracks.filter((t) => t.source === Track.Source.Camera);
 
   return (
     <LayoutContextProvider>
       <div
         className="lk-video-conference"
-        style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
+        style={{ height: '100vh', display: 'flex', flexDirection: 'column', gap: 4, padding: 4 }}
       >
-        <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
-          {screenShare ? (
-            <ParticipantTile trackRef={screenShare} style={{ flex: 1 }} />
-          ) : (
-            <GridLayout tracks={cameras} style={{ flex: 1, height: 'auto' }}>
-              <ParticipantTile />
-            </GridLayout>
-          )}
-        </div>
+        {screenShare ? (
+          <>
+            <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+              <ParticipantTile trackRef={screenShare} style={{ flex: 1, minWidth: 0 }} />
+            </div>
+            <div style={{ height: '24%', minHeight: 64, display: 'flex', gap: 4 }}>
+              {cameras.map((t) => (
+                <ParticipantTile
+                  key={`${t.participant.identity}-cam`}
+                  trackRef={t}
+                  style={{ flex: '1 1 0', minWidth: 0, maxWidth: '40%' }}
+                />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: 'grid',
+              gap: 4,
+              gridTemplateColumns: `repeat(${gridColumns(cameras.length)}, minmax(0, 1fr))`,
+              gridAutoRows: 'minmax(0, 1fr)',
+            }}
+          >
+            {cameras.map((t) => (
+              <ParticipantTile
+                key={`${t.participant.identity}-cam`}
+                trackRef={t}
+                style={{ height: '100%', minHeight: 0 }}
+              />
+            ))}
+          </div>
+        )}
         <ControlBar
           variation="minimal"
           controls={{
@@ -199,6 +222,13 @@ function PipContent() {
       </div>
     </LayoutContextProvider>
   );
+}
+
+/** Show every participant at once: 1, 2x1, 2x2, 3x3, 4x4... */
+function gridColumns(count: number) {
+  if (count <= 1) return 1;
+  if (count <= 4) return 2;
+  return Math.ceil(Math.sqrt(count));
 }
 
 function PipIcon() {
