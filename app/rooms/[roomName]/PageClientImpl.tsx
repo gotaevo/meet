@@ -1,5 +1,7 @@
 'use client';
 
+import { NoiseFilterButton } from '@/lib/NoiseFilterButton';
+
 import React from 'react';
 import { decodePassphrase } from '@/lib/client-utils';
 import { DebugMode } from '@/lib/Debug';
@@ -260,6 +262,7 @@ function VideoConferenceComponent(props: {
           chatMessageFormatter={formatChatMessageLinks}
           SettingsComponent={SHOW_SETTINGS_MENU ? SettingsMenu : undefined}
         />
+        <NoiseFilterButton />
         <DebugMode />
         <RecordingIndicator />
         <PictureInPicture />

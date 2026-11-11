@@ -65,3 +65,13 @@ h2 a {
 h2 a {
   text-decoration: none;
 }
+
+.noise-filter-button[aria-pressed='true'] {
+  background: #176744;
+}
+
+@media (max-width: 760px) {
+  .noise-filter-button span {
+    display: none;
+  }
+}

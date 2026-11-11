@@ -1,5 +1,7 @@
 'use client';
 
+import { NoiseFilterButton } from '@/lib/NoiseFilterButton';
+
 import { formatChatMessageLinks, RoomContext, VideoConference } from '@livekit/components-react';
 import {
   ExternalE2EEKeyProvider,
@@ -91,6 +93,7 @@ export function VideoConferenceClientImpl(props: {
             process.env.NEXT_PUBLIC_SHOW_SETTINGS_MENU === 'true' ? SettingsMenu : undefined
           }
         />
+        <NoiseFilterButton />
         <DebugMode logLevel={LogLevel.debug} />
       </RoomContext.Provider>
     </div>
