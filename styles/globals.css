@@ -114,3 +114,8 @@ h2 a {
 [data-lk-theme] .lk-media-device-select li:not(:last-child) {
   margin-bottom: 2px;
 }
+
+/* No "speaking" border on LiveKit tiles (picture-in-picture window). */
+[data-lk-theme] .lk-participant-tile[data-lk-speaking='true']::after {
+  border-width: 0 !important;
+}

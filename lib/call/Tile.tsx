@@ -6,7 +6,6 @@ import {
   VideoTrack,
   isTrackReference,
   useIsMuted,
-  useIsSpeaking,
 } from '@livekit/components-react';
 import { Participant, ParticipantEvent, Track } from 'livekit-client';
 import { displayFont } from '../fonts';
@@ -76,7 +75,6 @@ export function Tile({
 }) {
   const p = trackRef.participant;
   const isScreen = trackRef.source === Track.Source.ScreenShare;
-  const speaking = useIsSpeaking(p);
   const videoMuted = useIsMuted(trackRef);
   const micEnabled = useMicEnabled(p);
   const hasVideo = isTrackReference(trackRef) && !videoMuted;
@@ -90,7 +88,6 @@ export function Tile({
     <div
       className={styles.tile}
       data-variant={variant}
-      data-speaking={(!isScreen && speaking && !mutedForMe) || undefined}
       data-screen={isScreen || undefined}
     >
       {hasVideo ? (
