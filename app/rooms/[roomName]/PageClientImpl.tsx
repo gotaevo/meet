@@ -37,6 +37,8 @@ const CONN_DETAILS_ENDPOINT =
 
 export function PageClientImpl(props: {
   roomName: string;
+  inviteCode: string;
+  memberName?: string;
   serverUrl?: string;
   region?: string;
   hq: boolean;
@@ -63,13 +65,20 @@ export function PageClientImpl(props: {
     const url = new URL(CONN_DETAILS_ENDPOINT, window.location.origin);
     url.searchParams.append('roomName', props.roomName);
     url.searchParams.append('participantName', values.username);
+    url.searchParams.append('invite', props.inviteCode);
     if (props.region) {
       url.searchParams.append('region', props.region);
     }
     const connectionDetailsResp = await fetch(url.toString());
+    if (!connectionDetailsResp.ok) {
+      toast.error('Não foi possível entrar na sala. Peça um novo link de convite.');
+      setPreJoinChoices(undefined);
+      return false;
+    }
     const connectionDetailsData = await connectionDetailsResp.json();
     setConnectionDetails(connectionDetailsData);
-  }, []);
+    return true;
+  }, [props.roomName, props.region, props.inviteCode]);
   // The join screen already tells the user when camera/mic are blocked.
   const handlePreJoinError = React.useCallback((e: any) => console.warn(e), []);
 
@@ -79,12 +88,15 @@ export function PageClientImpl(props: {
       {connectionDetails === undefined || preJoinChoices === undefined ? (
         <JoinScreen
           roomName={props.roomName}
+          inviteCode={props.inviteCode}
+          memberName={props.memberName}
           onSubmit={handlePreJoinSubmit}
           onError={handlePreJoinError}
         />
       ) : (
         <VideoConferenceComponent
           roomName={props.roomName}
+          inviteCode={props.inviteCode}
           connectionDetails={connectionDetails}
           userChoices={preJoinChoices}
           options={{
@@ -100,6 +112,7 @@ export function PageClientImpl(props: {
 
 function VideoConferenceComponent(props: {
   roomName: string;
+  inviteCode: string;
   userChoices: LocalUserChoices;
   connectionDetails: ConnectionDetails;
   options: {
@@ -280,7 +293,7 @@ function VideoConferenceComponent(props: {
     <div className="lk-room-container">
       <RoomContext.Provider value={room}>
         <KeyboardShortcuts />
-        <CallView roomName={props.roomName} />
+        <CallView roomName={props.roomName} inviteCode={props.inviteCode} />
         <DebugMode />
         <RecordingIndicator />
       </RoomContext.Provider>

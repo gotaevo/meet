@@ -22,6 +22,7 @@ import { usePictureInPicture } from '../PictureInPicture';
 import { SettingsPanel, SettingsTab } from './SettingsPanel';
 import { useBackgroundEffect } from './useBackgroundEffect';
 import { LocalMuteProvider } from './localMute';
+import { inviteLabel, inviteUrl } from './inviteLink';
 import { computeLayout, DEFAULT_LAYOUT_PREFS, gridColumns, LayoutItem, LayoutPrefs } from './layout';
 import { LayoutDialog } from './LayoutDialog';
 import { ChatPanel, InviteCard, PeoplePanel } from './Panels';
@@ -112,7 +113,7 @@ const ignoreDeviceError = () => {};
 
 const trackId = (t: TrackReferenceOrPlaceholder) => `${t.participant.identity}:${t.source}`;
 
-export function CallView(props: { roomName: string }) {
+export function CallView(props: { roomName: string; inviteCode: string }) {
   return (
     <LayoutContextProvider>
       <LocalMuteProvider>
@@ -122,7 +123,7 @@ export function CallView(props: { roomName: string }) {
   );
 }
 
-function CallInner({ roomName }: { roomName: string }) {
+function CallInner({ roomName, inviteCode }: { roomName: string; inviteCode: string }) {
   const room = useRoomContext();
   const [prefs, setPrefs] = useLayoutPrefs();
   const [pinned, setPinned] = React.useState<string>();
@@ -188,10 +189,10 @@ function CallInner({ roomName }: { roomName: string }) {
   // ----- Invite card: shown while you're alone (until dismissed), or from the info button
   const alone = participants.length <= 1;
   const showInvite = inviteForced || (alone && !inviteDismissed);
-  const link = typeof window !== 'undefined' ? `${window.location.host}/rooms/${roomName}` : `/rooms/${roomName}`;
+  const link = typeof window !== 'undefined' ? inviteLabel(roomName) : `/rooms/${roomName}`;
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(inviteUrl(roomName, inviteCode));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {}

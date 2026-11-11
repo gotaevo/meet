@@ -203,12 +203,15 @@
   bottom: 28px;
 }
 /* Always a circle, whatever the tile's proportions. */
+.t4 {
+  container-type: size;
+}
 .t4::before {
   content: '';
   position: absolute;
-  height: 100%;
-  max-width: 100%;
-  aspect-ratio: 1;
+  /* the largest circle that fits the tile, whatever its proportions */
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
   border-radius: 50%;
   background: var(--accent);
 }
@@ -227,4 +230,74 @@
   .mosaic {
     display: none;
   }
+}
+
+/* ---------- login & account ---------- */
+.fieldLabel {
+  margin-top: 4px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.input {
+  height: 52px;
+  box-sizing: border-box;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--text);
+  font: inherit;
+}
+.input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.footnote {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.accountInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.logout {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.logout:hover {
+  background: var(--field);
+}
+.accountLink {
+  color: var(--text);
+  text-decoration: none;
+}
+.accountLink:hover {
+  text-decoration: underline;
+}
+a.logout {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }

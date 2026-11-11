@@ -10,6 +10,7 @@ import {
 } from '@livekit/components-react';
 import { LocalVideoTrack, Track, facingModeFromLocalTrack } from 'livekit-client';
 import { displayFont } from './fonts';
+import { inviteUrl } from './call/inviteLink';
 import styles from '../styles/JoinScreen.module.css';
 
 /**
@@ -26,15 +27,14 @@ export function JoinScreen(props: JoinScreenProps) {
 
 type JoinScreenProps = {
   roomName: string;
-  onSubmit: (choices: LocalUserChoices) => void;
+  inviteCode: string;
+  memberName?: string;
+  /** resolves false when joining failed, so the button becomes clickable again */
+  onSubmit: (choices: LocalUserChoices) => Promise<boolean> | void;
   onError?: (error: Error) => void;
 };
 
-function JoinScreenInner({
-  roomName,
-  onSubmit,
-  onError,
-}: JoinScreenProps) {
+function JoinScreenInner({ roomName, inviteCode, memberName, onSubmit, onError }: JoinScreenProps) {
   const {
     userChoices: initial,
     saveAudioInputDeviceId,
@@ -48,7 +48,7 @@ function JoinScreenInner({
   const [videoEnabled, setVideoEnabled] = React.useState(initial.videoEnabled);
   const [audioDeviceId, setAudioDeviceId] = React.useState(initial.audioDeviceId);
   const [videoDeviceId, setVideoDeviceId] = React.useState(initial.videoDeviceId);
-  const [username, setUsername] = React.useState(initial.username);
+  const [username, setUsername] = React.useState(initial.username || memberName || '');
   const [copied, setCopied] = React.useState(false);
   const [joining, setJoining] = React.useState(false);
   const [deviceError, setDeviceError] = React.useState(false);
@@ -124,7 +124,7 @@ function JoinScreenInner({
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(inviteUrl(roomName, inviteCode));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {}
@@ -134,7 +134,9 @@ function JoinScreenInner({
     event.preventDefault();
     if (!name || joining) return;
     setJoining(true);
-    onSubmit({ username: name, audioEnabled, videoEnabled, audioDeviceId, videoDeviceId });
+    Promise.resolve(onSubmit({ username: name, audioEnabled, videoEnabled, audioDeviceId, videoDeviceId }))
+      .then((ok) => ok === false && setJoining(false))
+      .catch(() => setJoining(false));
   };
 
   return (

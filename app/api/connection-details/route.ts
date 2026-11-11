@@ -3,6 +3,8 @@ import { getLiveKitURL } from '@/lib/getLiveKitURL';
 import { ConnectionDetails } from '@/lib/types';
 import { AccessToken, AccessTokenOptions, VideoGrant } from 'livekit-server-sdk';
 import { NextRequest, NextResponse } from 'next/server';
+import { getRequestUser } from '@/lib/auth/session';
+import { isValidInvite } from '@/lib/auth/tokens';
 
 const API_KEY = process.env.LIVEKIT_API_KEY;
 const API_SECRET = process.env.LIVEKIT_API_SECRET;
@@ -31,6 +33,16 @@ export async function GET(request: NextRequest) {
     }
     if (participantName === null) {
       return new NextResponse('Missing required query parameter: participantName', { status: 400 });
+    }
+    if (!/^[\w-]{1,64}$/.test(roomName) || participantName.trim().length === 0 || participantName.length > 64) {
+      return new NextResponse('Invalid room or participant name', { status: 400 });
+    }
+
+    // Only the team (logged in) or someone with this room's invite link may get a token.
+    const session = await getRequestUser(request);
+    const invite = request.nextUrl.searchParams.get('invite');
+    if (!session && !(await isValidInvite(roomName, invite))) {
+      return new NextResponse('Convite inválido ou ausente', { status: 401 });
     }
 
     // Generate participant token
