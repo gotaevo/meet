@@ -2,11 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { Bricolage_Grotesque } from 'next/font/google';
+import { displayFont as display } from '@/lib/fonts';
 import { encodePassphrase, generateRoomId, randomString } from '@/lib/client-utils';
 import styles from '../styles/Home.module.css';
-
-const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['700'] });
 
 /**
  * Accepts a bare room code or a full meeting link (…/rooms/<code>#<key>).

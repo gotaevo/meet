@@ -79,3 +79,47 @@ h2 a {
 .noise-filter-button[data-failed='true'] {
   background: var(--lk-danger3, #6b1d1d);
 }
+
+/* Device picker (microphone / camera / speaker menus) in Taevo colors. */
+[data-lk-theme] .lk-device-menu {
+  min-width: 15rem;
+  padding: 6px;
+  background: #1e1917;
+  border: 1px solid #3a302b;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+[data-lk-theme] .lk-device-menu-heading {
+  padding: 8px 12px 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #b9ada6;
+  opacity: 1;
+}
+[data-lk-theme] .lk-media-device-select li > .lk-button {
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: transparent;
+  color: #f6eee9;
+  font-size: 0.9375rem;
+}
+[data-lk-theme] .lk-media-device-select li:not([data-lk-active='true']) > .lk-button:not(:disabled):hover {
+  background: #2a2320;
+}
+[data-lk-theme] .lk-media-device-select [data-lk-active='true'] > .lk-button {
+  background: rgba(255, 91, 46, 0.14);
+  color: #ffc2a8;
+  font-weight: 500;
+}
+[data-lk-theme] .lk-media-device-select [data-lk-active='true'] > .lk-button::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff5b2e;
+  flex-shrink: 0;
+}
+[data-lk-theme] .lk-media-device-select li:not(:last-child) {
+  margin-bottom: 2px;
+}

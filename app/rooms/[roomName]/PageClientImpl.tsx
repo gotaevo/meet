@@ -9,12 +9,12 @@ import { KeyboardShortcuts } from '@/lib/KeyboardShortcuts';
 import { RecordingIndicator } from '@/lib/RecordingIndicator';
 import { PictureInPicture } from '@/lib/PictureInPicture';
 import { TranslateLiveKit } from '@/lib/TranslateLiveKit';
+import { JoinScreen } from '@/lib/JoinScreen';
 import { SettingsMenu } from '@/lib/SettingsMenu';
 import { ConnectionDetails } from '@/lib/types';
 import {
   formatChatMessageLinks,
   LocalUserChoices,
-  PreJoin,
   RoomContext,
   VideoConference,
 } from '@livekit/components-react';
@@ -49,13 +49,6 @@ export function PageClientImpl(props: {
   const [preJoinChoices, setPreJoinChoices] = React.useState<LocalUserChoices | undefined>(
     undefined,
   );
-  const preJoinDefaults = React.useMemo(() => {
-    return {
-      username: '',
-      videoEnabled: true,
-      audioEnabled: true,
-    };
-  }, []);
   const [connectionDetails, setConnectionDetails] = React.useState<ConnectionDetails | undefined>(
     undefined,
   );
@@ -86,17 +79,11 @@ export function PageClientImpl(props: {
     <main data-lk-theme="default" style={{ height: '100%' }}>
       <TranslateLiveKit />
       {connectionDetails === undefined || preJoinChoices === undefined ? (
-        <div style={{ display: 'grid', placeItems: 'center', height: '100%' }}>
-          <PreJoin
-            defaults={preJoinDefaults}
-            onSubmit={handlePreJoinSubmit}
-            onError={handlePreJoinError}
-            joinLabel="Entrar na sala"
-            micLabel="Microfone"
-            camLabel="Câmera"
-            userLabel="Seu nome"
-          />
-        </div>
+        <JoinScreen
+          roomName={props.roomName}
+          onSubmit={handlePreJoinSubmit}
+          onError={handlePreJoinError}
+        />
       ) : (
         <VideoConferenceComponent
           connectionDetails={connectionDetails}
