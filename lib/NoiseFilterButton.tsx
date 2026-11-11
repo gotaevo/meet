@@ -4,7 +4,6 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { useKrispNoiseFilter } from '@livekit/components-react/krisp';
 import { useLocalParticipant } from '@livekit/components-react';
-import { isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter';
 import { isLowPowerDevice } from './client-utils';
 import { NoiseFilterControl } from './NoiseFilterControl';
 
@@ -22,7 +21,9 @@ export function NoiseFilterButton() {
   );
 
   React.useEffect(() => {
-    setSupported(isKrispNoiseFilterSupported());
+    void import('@livekit/krisp-noise-filter')
+      .then(({ isKrispNoiseFilterSupported }) => setSupported(isKrispNoiseFilterSupported()))
+      .catch(() => setSupported(false));
     const findMicrophone = () => {
       setTarget(
         document.querySelector<HTMLElement>(
