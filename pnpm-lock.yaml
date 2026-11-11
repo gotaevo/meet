@@ -23,6 +23,9 @@ importers:
       '@livekit/track-processors':
         specifier: ^0.8.0
         version: 0.8.1(@types/dom-mediacapture-transform@0.1.11)(livekit-client@2.23.0(@types/dom-mediacapture-record@1.0.22))
+      '@sapphi-red/web-noise-suppressor':
+        specifier: ^0.4.1
+        version: 0.4.1
       livekit-client:
         specifier: 2.23.0
         version: 2.23.0(@types/dom-mediacapture-record@1.0.22)
@@ -715,6 +718,9 @@ packages:
 
   '@rushstack/eslint-patch@1.10.4':
     resolution: {integrity: sha512-WJgX9nzTqknM393q1QJDJmoW28kUfEnybeTfVNcNAPnIx210RXm2DiXiHzfNPJNIUUb1tJnz/l4QGtJ30PgWmA==}
+
+  '@sapphi-red/web-noise-suppressor@0.4.1':
+    resolution: {integrity: sha512-hy2GnF079+zi4n9BZUf+GGIQ1IofApAk6rgGMyMQ3soHfz/GKu1pcCsmePyIHVvUuv1LrFudw9BmmBqoOKay5w==}
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
@@ -2838,6 +2844,8 @@ snapshots:
   '@rtsao/scc@1.1.0': {}
 
   '@rushstack/eslint-patch@1.10.4': {}
+
+  '@sapphi-red/web-noise-suppressor@0.4.1': {}
 
   '@swc/helpers@0.5.15':
     dependencies:

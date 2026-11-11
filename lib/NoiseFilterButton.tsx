@@ -4,12 +4,10 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { useLocalParticipant } from '@livekit/components-react';
 import { LocalAudioTrack } from 'livekit-client';
-import type { KrispNoiseFilterProcessor } from '@livekit/krisp-noise-filter';
-import { isLowPowerDevice } from './client-utils';
 import { NoiseFilterControl } from './NoiseFilterControl';
+import { RNNOISE_PROCESSOR_NAME, RnnoiseProcessor, isRnnoiseSupported } from './RnnoiseProcessor';
 
 const PREF_KEY = 'meet:noise-filter';
-const KRISP_NAME = 'livekit-noise-filter';
 
 function readPref() {
   try {
@@ -26,18 +24,10 @@ function writePref(value: boolean) {
 }
 
 /**
- * Krisp noise cancellation, opt-in per participant.
+ * RNNoise noise suppression, opt-in per participant.
  *
- * Why not `useKrispNoiseFilter` from components-react:
- * - When "disabled" it keeps the Krisp processor attached in bypass, and Krisp turns the
- *   browser's own noise suppression off on attach, so "off" was worse than no filter at all
- *   and the difference between on/off was barely noticeable.
- * - It reports "enabled" even when Krisp refuses to start (Cloud validation) or disables
- *   itself on CPU overload, so the button lied about the real state.
- *
- * Here "off" removes the processor entirely (restoring the browser's noise suppression),
- * "on" uses the strongest model the device can handle plus background voice cancellation,
- * and the button reflects what the processor is actually doing.
+ * "On" runs the mic through RNNoise on top of the browser's own noise suppression;
+ * "off" removes the processor entirely. The button reflects the processor's real state.
  */
 function useNoiseFilter() {
   const { microphoneTrack, isMicrophoneEnabled } = useLocalParticipant();
@@ -51,14 +41,14 @@ function useNoiseFilter() {
 
   React.useEffect(() => {
     setWanted(readPref());
-    void import('@livekit/krisp-noise-filter')
-      .then(({ isKrispNoiseFilterSupported }) => setSupported(isKrispNoiseFilterSupported()))
-      .catch(() => setSupported(false));
+    setSupported(isRnnoiseSupported());
   }, []);
 
   const sync = React.useCallback(() => {
-    const proc = track?.getProcessor() as KrispNoiseFilterProcessor | undefined;
-    setActive(!!proc && proc.name === KRISP_NAME && proc.isEnabled());
+    const proc = track?.getProcessor();
+    setActive(
+      !!proc && proc.name === RNNOISE_PROCESSOR_NAME && proc.processedTrack?.readyState === 'live',
+    );
   }, [track]);
 
   // Apply the participant's choice to the current microphone track
@@ -70,32 +60,17 @@ function useNoiseFilter() {
     }
     let cancelled = false;
     const apply = async () => {
-      const current = track.getProcessor();
-      const hasKrisp = current?.name === KRISP_NAME;
-      if (wanted && !hasKrisp) {
+      const hasFilter = track.getProcessor()?.name === RNNOISE_PROCESSOR_NAME;
+      if (wanted && !hasFilter) {
         setPending(true);
-        const { KrispNoiseFilter } = await import('@livekit/krisp-noise-filter');
-        const lowPower = isLowPowerDevice();
-        await track.setProcessor(
-          KrispNoiseFilter({
-            quality: lowPower ? 'medium' : 'high',
-            // Also removes other people talking / TV in the background, like Google Meet.
-            useBVC: !lowPower,
-            onBufferDrop: () => console.warn('Krisp: CPU overloaded, audio buffer dropped'),
-          }),
-        );
-        const proc = track.getProcessor() as KrispNoiseFilterProcessor | undefined;
-        const ok = await proc?.setEnabled(true);
-        if (ok === false) console.warn('Krisp: noise filter could not be enabled');
-      } else if (!wanted && hasKrisp) {
+        await track.setProcessor(new RnnoiseProcessor());
+      } else if (!wanted && hasFilter) {
         setPending(true);
-        // Removing the processor restores the original mic constraints,
-        // so the browser's built-in noise suppression comes back.
         await track.stopProcessor();
       }
     };
     apply()
-      .catch((e) => console.error('Krisp: failed to apply noise filter', e))
+      .catch((e) => console.error('RNNoise: failed to apply noise filter', e))
       .finally(() => {
         if (cancelled) return;
         setPending(false);
@@ -106,7 +81,6 @@ function useNoiseFilter() {
     };
   }, [track, wanted, supported, sync]);
 
-  // Krisp can turn itself off (CPU overload, Cloud validation): keep the UI honest.
   React.useEffect(() => {
     if (!track) return;
     const id = setInterval(sync, 1000);
