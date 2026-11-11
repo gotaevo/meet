@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import {
   LocalUserChoices,
   MediaDeviceMenu,
@@ -139,12 +140,12 @@ function JoinScreenInner({
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <a href="/" aria-label="Taevo Meet — início">
+        <Link href="/" aria-label="Taevo Meet — início">
           <img src="/images/logo.svg" alt="Taevo Meet" width="133" height="36" />
-        </a>
-        <a href="/" className={styles.back}>
+        </Link>
+        <Link href="/" className={styles.back}>
           Voltar ao início
-        </a>
+        </Link>
       </header>
 
       <main className={styles.main}>
